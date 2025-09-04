@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Banking App – Loan Application</title>
+  <style>
+    :root{
+      --bg:#0f172a;          /* slate-900 */
+      --panel:#111827;       /* gray-900 */
+      --panel-2:#0b1226;     /* dark navy */
+      --card:#111827;
+      --muted:#94a3b8;       /* slate-400 */
+      --text:#e5e7eb;        /* gray-200 */
+      --accent:#6366f1;      /* indigo-500 */
+      --accent-2:#22d3ee;    /* cyan-400 */
+      --danger:#ef4444;      /* red-500 */
+      --success:#10b981;     /* emerald-500 */
+      --warning:#f59e0b;     /* amber-500 */
+      --border:#1f2937;      /* gray-800 */
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 700px at 10% -10%, rgba(99,102,241,.25), transparent 40%),
+                  radial-gradient(1000px 600px at 110% 10%, rgba(34,211,238,.15), transparent 40%),
+                  var(--bg);
+      color:var(--text);
+    }
+    header{
+      position: sticky; top:0; z-index:10;
+      backdrop-filter: blur(8px);
+      background: linear-gradient(180deg, rgba(15,23,42,.85), rgba(15,23,42,.6));
+      border-bottom:1px solid var(--border);
+    }
+    .wrap{max-width:1200px; margin:auto; padding:16px;}
+    .title{display:flex; align-items:center; gap:12px}
+    .title .logo{width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,var(--accent),var(--accent-2)); box-shadow:var(--shadow)}
+    .subtitle{color:var(--muted); margin-top:4px}
+
+    main{max-width:1200px; margin:24px auto; padding:0 16px;}
+    .grid{display:grid; grid-template-columns:1.2fr .8fr; gap:18px}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr;}}
+
+    .card{background:linear-gradient(180deg, rgba(17,24,39,.9), rgba(11,18,38,.9)); border:1px solid var(--border); border-radius:18px; padding:18px; box-shadow:var(--shadow)}
+    .card h2{margin:0 0 10px; font-size:1.1rem}
+    fieldset{border:1px solid var(--border); border-radius:14px; padding:14px; margin:14px 0}
+    legend{padding:4px 10px; background:rgba(99,102,241,.15); border:1px solid var(--border); border-radius:999px; font-size:.9rem}
+
+    label{display:block; font-size:.9rem; color:var(--muted); margin:10px 0 6px}
+    input[type="text"], input[type="number"], input[type="date"], input[type="email"], textarea, select{
+      width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:#0b1020; color:var(--text); outline:none;
+    }
+    textarea{min-height:80px; resize:vertical}
+    .row{display:grid; grid-template-columns: repeat(12,1fr); gap:12px}
+    .col-6{grid-column: span 6}
+    .col-4{grid-column: span 4}
+    .col-3{grid-column: span 3}
+    .col-8{grid-column: span 8}
+    .col-12{grid-column: span 12}
+    @media (max-width: 700px){ .col-6,.col-4,.col-3,.col-8{grid-column: span 12}}
+
+    .btn{display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; border:1px solid var(--border); background:#0e1530; color:var(--text); cursor:pointer; transition:.2s transform ease, .2s background ease; text-decoration:none}
+    .btn:hover{transform: translateY(-1px); background:#12193a}
+    .btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#081226; font-weight:600; border:none}
+    .btn.ghost{background:transparent}
+    .btn.success{background:linear-gradient(135deg,#34d399,#10b981); color:#052016; border:none}
+    .btn.danger{background:linear-gradient(135deg,#fb7185,#ef4444); color:#2a0506; border:none}
+    .btn.warning{background:linear-gradient(135deg,#fbbf24,#f59e0b); color:#241400; border:none}
+
+    .toolbar{display:flex; flex-wrap:wrap; gap:10px; margin-top:10px}
+
+    .badge{display:inline-block; padding:6px 10px; border-radius:999px; font-size:.8rem; border:1px solid var(--border); background:#0b1226; color:var(--muted)}
+    .badge.live{background:rgba(34,211,238,.15); color:#7dd3fc; border-color: rgba(125,211,252,.2)}
+    .hint{font-size:.85rem; color:var(--muted)}
+
+    .stepper{display:flex; gap:10px; flex-wrap:wrap}
+    .step{display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; border:1px dashed var(--border); color:var(--muted)}
+    .step.active{border-style:solid; background:rgba(99,102,241,.12); color:#c7d2fe}
+    .step.done{background:rgba(16,185,129,.12); color:#a7f3d0; border-color:rgba(16,185,129,.35)}
+
+    .kpi{display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin:10px 0}
+    .kpi .pill{padding:12px; border-radius:14px; border:1px solid var(--border); background:#0b1226}
+    .pill .label{color:var(--muted); font-size:.8rem}
+    .pill .value{font-size:1.25rem; font-weight:700}
+
+    .docs{display:flex; flex-wrap:wrap; gap:8px}
+    .docchip{padding:6px 10px; border-radius:999px; background:#0b1020; border:1px solid var(--border); font-size:.85rem}
+
+    .list{list-style:none; padding:0; margin:6px 0}
+    .list li{padding:8px 10px; border:1px solid var(--border); border-radius:10px; margin:6px 0; background:#0b1020}
+
+    .footer{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:14px; color:var(--muted); font-size:.85rem}
+    .right{display:flex; gap:8px; align-items:center}
+
+    .error{color:#fecaca; background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.4); padding:8px 10px; border-radius:10px; display:none}
+    .ok{color:#bbf7d0; background:rgba(16,185,129,.15); border:1px solid rgba(16,185,129,.4); padding:8px 10px; border-radius:10px; display:none}
+
+    @media print{
+      header,.toolbar,.footer{display:none !important}
+      body{background:#fff; color:#000}
+      .card{box-shadow:none; border:1px solid #ccc}
+      .stepper .step{border:1px solid #999}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="title">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <div style="font-weight:800; font-size:1.1rem; letter-spacing:.2px">Loan Application</div>
+          <div class="subtitle">Banking App module • Capture customer details, loan params, documents, and approval stages</div>
+        </div>
+        <span class="badge live" id="statusBadge" style="margin-left:auto">Draft</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <section class="card" aria-labelledby="formTitle">
+        <h2 id="formTitle">Application Form</h2>
+
+        <div class="error" id="errorBox" role="alert"></div>
+        <div class="ok" id="okBox" role="status"></div>
+
+        <form id="loanForm" novalidate>
+          <fieldset>
+            <legend>Customer Details</legend>
+            <div class="row">
+              <div class="col-4">
+                <label for="customerId">Customer ID</label>
+                <input id="customerId" name="customerId" type="text" placeholder="Auto or enter…" />
+              </div>
+              <div class="col-8">
+                <label for="fullName">Full Name *</label>
+                <input id="fullName" name="fullName" type="text" required placeholder="e.g., Priya Sharma" />
+              </div>
+
+              <div class="col-4">
+                <label for="dob">Date of Birth *</label>
+                <input id="dob" name="dob" type="date" required />
+              </div>
+              <div class="col-4">
+                <label for="phone">Phone *</label>
+                <input id="phone" name="phone" type="text" required placeholder="10-digit" />
+              </div>
+              <div class="col-4">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" placeholder="name@example.com" />
+              </div>
+
+              <div class="col-12">
+                <label for="address">Address</label>
+                <textarea id="address" name="address" placeholder="Street, City, State, PIN"></textarea>
+              </div>
+
+              <div class="col-6">
+                <label for="employment">Employment</label>
+                <input id="employment" name="employment" type="text" placeholder="e.g., Software Engineer at ABC Ltd." />
+              </div>
+              <div class="col-3">
+                <label for="income">Monthly Income (₹) *</label>
+                <input id="income" name="income" type="number" inputmode="decimal" min="0" step="0.01" required />
+              </div>
+              <div class="col-3">
+                <label for="creditScore">Credit Score</label>
+                <input id="creditScore" name="creditScore" type="number" min="300" max="900" placeholder="300–900" />
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Loan Details</legend>
+            <div class="row">
+              <div class="col-4">
+                <label for="loanType">Loan Type *</label>
+                <select id="loanType" name="loanType" required>
+                  <option value="">Select…</option>
+                  <option>Personal Loan</option>
+                  <option>Home Loan</option>
+                  <option>Vehicle Loan</option>
+                  <option>Education Loan</option>
+                  <option>Business Loan</option>
+                </select>
+              </div>
+              <div class="col-4">
+                <label for="amount">Amount (₹) *</label>
+                <input id="amount" name="amount" type="number" min="1000" step="1" required />
+              </div>
+              <div class="col-4">
+                <label for="tenure">Tenure (months) *</label>
+                <input id="tenure" name="tenure" type="number" min="1" step="1" required />
+              </div>
+
+              <div class="col-3">
+                <label for="interestRate">Interest Rate (%) *</label>
+                <input id="interestRate" name="interestRate" type="number" min="0" step="0.01" required />
+              </div>
+              <div class="col-3">
+                <label for="interestType">Interest Type</label>
+                <select id="interestType" name="interestType">
+                  <option>Fixed</option>
+                  <option>Floating</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label for="collateral">Collateral (if applicable)</label>
+                <input id="collateral" name="collateral" type="text" placeholder="e.g., Property papers, FD lien" />
+              </div>
+
+              <div class="col-12">
+                <div class="kpi">
+                  <div class="pill"><div class="label">EMI (₹/month)</div><div class="value" id="emiOut">—</div></div>
+                  <div class="pill"><div class="label">Total Interest (₹)</div><div class="value" id="tiOut">—</div></div>
+                  <div class="pill"><div class="label">Total Payable (₹)</div><div class="value" id="tpOut">—</div></div>
+                </div>
+                <div class="hint">EMI calculated using standard amortization formula. If rate is 0%, EMI = Amount / Tenure.</div>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Required Documents</legend>
+            <div class="docs" id="requiredDocs"></div>
+            <div class="row">
+              <div class="col-12">
+                <label for="files">Upload Documents</label>
+                <input id="files" name="files" type="file" multiple />
+                <ul class="list" id="fileList"></ul>
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Approval Workflow</legend>
+            <div class="stepper" id="stepper"></div>
+            <div class="toolbar">
+              <button type="button" class="btn primary" id="btnSubmit">Submit Application</button>
+              <button type="button" class="btn" id="btnNext">Advance Stage</button>
+              <button type="button" class="btn success" id="btnApprove">Approve</button>
+              <button type="button" class="btn danger" id="btnReject">Reject</button>
+              <button type="button" class="btn warning" id="btnDisburse">Disburse</button>
+            </div>
+          </fieldset>
+
+          <div class="footer">
+            <div>Tip: Use <span class="badge">Save Draft</span> to keep your work in this browser.</div>
+            <div class="right">
+              <button type="button" class="btn ghost" id="btnSave">Save Draft</button>
+              <button type="button" class="btn ghost" id="btnLoad">Load Draft</button>
+              <button type="button" class="btn ghost" id="btnPrint">Print</button>
+              <button type="button" class="btn" id="btnDownload">Download JSON</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <aside class="card" aria-labelledby="previewTitle">
+        <h2 id="previewTitle">Live Preview</h2>
+        <div class="badge" id="appId">Application ID: —</div>
+        <ul class="list" id="preview"></ul>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    // ---------- Utility helpers ----------
+    const $ = (id) => document.getElementById(id);
+    const fmt = (n) => isNaN(n) ? '—' : new Intl.NumberFormat('en-IN', {maximumFractionDigits: 2}).format(n);
+    const rupees = (n) => isNaN(n) ? '—' : new Intl.NumberFormat('en-IN', {style:'currency', currency:'INR', maximumFractionDigits: 2}).format(n);
+
+    function randomId(){
+      const t = Date.now().toString(36).toUpperCase();
+      const r = Math.random().toString(36).slice(2,8).toUpperCase();
+      return `LN-${t}-${r}`;
+    }
+
+    // ---------- Required documents map ----------
+    const DOCS_MAP = {
+      "Personal Loan": ["ID Proof (Aadhaar/Passport/DL)", "Address Proof", "Bank Statements (6 months)", "Salary Slips/ITR"],
+      "Home Loan": ["ID Proof", "Address Proof", "Income Proof", "Property Documents", "Bank Statements (12 months)"],
+      "Vehicle Loan": ["ID Proof", "Address Proof", "Income Proof", "Proforma Invoice"],
+      "Education Loan": ["ID Proof", "Address Proof", "Admission Letter", "Fee Structure", "Co-borrower Docs"],
+      "Business Loan": ["ID Proof", "Business Registration", "GST Returns", "Bank Statements (12 months)", "ITR (2 years)"]
+    };
+
+    // ---------- Stages ----------
+    const STAGES = [
+      "Submitted",
+      "Document Verification",
+      "Credit Check",
+      "Loan Officer Review",
+      "Approved / Rejected",
+      "Disbursed"
+    ];
+    let stageIndex = -1; // -1 before submit
+
+    // ---------- Init UI ----------
+    function buildStepper(){
+      const stepper = $("stepper");
+      stepper.innerHTML = '';
+      STAGES.forEach((s, i) => {
+        const el = document.createElement('div');
+        el.className = 'step';
+        el.dataset.idx = i;
+        el.innerHTML = `<span>●</span><span>${s}</span>`;
+        stepper.appendChild(el);
+      });
+      renderStages();
+    }
+
+    function renderStages(){
+      const steps = [...document.querySelectorAll('.step')];
+      steps.forEach((el, i) => {
+        el.classList.remove('active','done');
+        if(stageIndex === -1){ return; }
+        if(i < stageIndex) el.classList.add('done');
+        if(i === stageIndex) el.classList.add('active');
+      });
+      const badge = $("statusBadge");
+      if(stageIndex === -1) badge.textContent = 'Draft';
+      else badge.textContent = STAGES[stageIndex];
+
+      // control buttons
+      $("btnNext").disabled = (stageIndex < 0) || (stageIndex >= STAGES.length-2);
+      $("btnApprove").disabled = stageIndex !== STAGES.indexOf("Loan Officer Review");
+      $("btnReject").disabled = stageIndex !== STAGES.indexOf("Loan Officer Review");
+      $("btnDisburse").disabled = stageIndex !== STAGES.indexOf("Approved / Rejected");
+    }
+
+    // ---------- Calculations ----------
+    function calcEMI(){
+      const P = parseFloat($("amount").value);
+      const n = parseInt($("tenure").value,10);
+      const rate = parseFloat($("interestRate").value);
+      if(!(P>0) || !(n>0) || !(rate>=0)){
+        $("emiOut").textContent = '—';
+        $("tiOut").textContent = '—';
+        $("tpOut").textContent = '—';
+        return;
+      }
+      const r = rate/12/100;
+      let emi, totalPayable, totalInterest;
+      if(r === 0){
+        emi = P / n;
+        totalPayable = P;
+        totalInterest = 0;
+      } else {
+        const pow = Math.pow(1+r, n);
+        emi = P * r * pow / (pow - 1);
+        totalPayable = emi * n;
+        totalInterest = totalPayable - P;
+      }
+      $("emiOut").textContent = fmt(emi.toFixed(2));
+      $("tiOut").textContent = fmt(totalInterest.toFixed(2));
+      $("tpOut").textContent = fmt(totalPayable.toFixed(2));
+    }
+
+    // ---------- Required docs UI ----------
+    function renderRequiredDocs(){
+      const lt = $("loanType").value;
+      const box = $("requiredDocs");
+      box.innerHTML = '';
+      if(!lt) return;
+      (DOCS_MAP[lt] || []).forEach((d, i) => {
+        const id = `doc_${i}`;
+        const chip = document.createElement('label');
+        chip.className = 'docchip';
+        chip.innerHTML = `<input type="checkbox" data-doc="${d}" /> ${d}`;
+        box.appendChild(chip);
+      });
+    }
+
+    // ---------- Files UI ----------
+    $("files").addEventListener('change', e => {
+      const list = $("fileList");
+      list.innerHTML = '';
+      const files = [...e.target.files];
+      files.forEach(f => {
+        const li = document.createElement('li');
+        li.textContent = `${f.name} (${Math.round(f.size/1024)} KB)`;
+        list.appendChild(li);
+      });
+    });
+
+    // ---------- Validation ----------
+    function showError(msg){ const b=$("errorBox"); b.textContent=msg; b.style.display='block'; setTimeout(()=>b.style.display='none', 4000); }
+    function showOk(msg){ const b=$("okBox"); b.textContent=msg; b.style.display='block'; setTimeout(()=>b.style.display='none', 3000); }
+
+    function validate(){
+      const required = ['fullName','dob','phone','income','loanType','amount','tenure','interestRate'];
+      for(const id of required){
+        const el = $(id);
+        if(!el || !el.value){ el.focus(); showError('Please fill all required fields (marked with *).'); return false; }
+      }
+      const phone = $("phone").value.replace(/\D/g,'');
+      if(phone.length < 10){ $("phone").focus(); showError('Phone must be at least 10 digits.'); return false; }
+      if(parseFloat($("income").value) <= 0){ $("income").focus(); showError('Income must be greater than 0.'); return false; }
+      if(parseFloat($("amount").value) <= 0){ $("amount").focus(); showError('Amount must be greater than 0.'); return false; }
+      if(parseInt($("tenure").value,10) <= 0){ $("tenure").focus(); showError('Tenure must be at least 1 month.'); return false; }
+      return true;
+    }
+
+    // ---------- Form serialization ----------
+    function serialize(){
+      const data = {
+        applicationId: $("appId").dataset.id || null,
+        status: $("statusBadge").textContent,
+        submittedAt: new Date().toISOString(),
+        customer: {
+          customerId: $("customerId").value || null,
+          fullName: $("fullName").value,
+          dob: $("dob").value,
+          phone: $("phone").value,
+          email: $("email").value || null,
+          address: $("address").value || null,
+          employment: $("employment").value || null,
+          income: Number($("income").value),
+          creditScore: $("creditScore").value ? Number($("creditScore").value) : null
+        },
+        loan: {
+          type: $("loanType").value,
+          amount: Number($("amount").value),
+          tenureMonths: Number($("tenure").value),
+          interestRatePct: Number($("interestRate").value),
+          interestType: $("interestType").value,
+          collateral: $("collateral").value || null,
+          emi: $("emiOut").textContent,
+          totalInterest: $("tiOut").textContent,
+          totalPayable: $("tpOut").textContent
+        },
+        documents: {
+          required: [...document.querySelectorAll('#requiredDocs input[type="checkbox"]')].map(cb => ({name: cb.dataset.doc, provided: cb.checked})),
+          uploads: [...($("files").files||[])].map(f => ({name:f.name, size:f.size}))
+        },
+        workflow: {
+          stages: STAGES,
+          currentStageIndex: stageIndex
+        }
+      };
+      return data;
+    }
+
+    function updatePreview(){
+      const d = serialize();
+      const p = $("preview");
+      p.innerHTML = '';
+      const items = [
+        [`Name`, d.customer.fullName||'—'],
+        [`Loan Type`, d.loan.type||'—'],
+        [`Amount`, rupees(d.loan.amount)],
+        [`Tenure`, d.loan.tenureMonths? d.loan.tenureMonths+' months' : '—'],
+        [`Interest`, d.loan.interestRatePct? d.loan.interestRatePct+'%' : '—'],
+        [`EMI`, d.loan.emi],
+        [`Stage`, d.workflow.currentStageIndex < 0 ? 'Draft' : STAGES[d.workflow.currentStageIndex]]
+      ];
+      items.forEach(([k,v])=>{ const li=document.createElement('li'); li.innerHTML = `<strong>${k}:</strong> ${v}`; p.appendChild(li); });
+    }
+
+    // ---------- Draft (localStorage) ----------
+    function saveDraft(){ localStorage.setItem('loanAppDraft', JSON.stringify(serialize())); showOk('Draft saved locally.'); }
+    function loadDraft(){ const raw = localStorage.getItem('loanAppDraft'); if(!raw){ showError('No draft found.'); return; } const d=JSON.parse(raw); hydrate(d); showOk('Draft loaded.'); }
+
+    function hydrate(d){
+      if(!d) return;
+      $("customerId").value = d.customer.customerId || '';
+      $("fullName").value = d.customer.fullName || '';
+      $("dob").value = d.customer.dob || '';
+      $("phone").value = d.customer.phone || '';
+      $("email").value = d.customer.email || '';
+      $("address").value = d.customer.address || '';
+      $("employment").value = d.customer.employment || '';
+      $("income").value = d.customer.income ?? '';
+      $("creditScore").value = d.customer.creditScore ?? '';
+
+      $("loanType").value = d.loan.type || '';
+      renderRequiredDocs();
+
+      $("amount").value = d.loan.amount ?? '';
+      $("tenure").value = d.loan.tenureMonths ?? '';
+      $("interestRate").value = d.loan.interestRatePct ?? '';
+      $("interestType").value = d.loan.interestType || 'Fixed';
+      $("collateral").value = d.loan.collateral || '';
+
+      stageIndex = d.workflow.currentStageIndex ?? -1;
+      renderStages();
+      calcEMI();
+      updatePreview();
+
+      if(d.applicationId){ $("appId").dataset.id = d.applicationId; $("appId").textContent = `Application ID: ${d.applicationId}`; }
+    }
+
+    // ---------- Download ----------
+    function downloadJSON(){
+      const data = serialize();
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = (data.applicationId || 'loan-application') + '.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // ---------- Event wiring ----------
+    ["amount","tenure","interestRate"].forEach(id => $(id).addEventListener('input', ()=>{ calcEMI(); updatePreview(); }));
+    $("loanType").addEventListener('change', ()=>{ renderRequiredDocs(); updatePreview(); });
+    ["fullName","income"].forEach(id => $(id).addEventListener('input', updatePreview));
+
+    $("btnSave").addEventListener('click', saveDraft);
+    $("btnLoad").addEventListener('click', loadDraft);
+    $("btnPrint").addEventListener('click', ()=>window.print());
+    $("btnDownload").addEventListener('click', downloadJSON);
+
+    $("btnSubmit").addEventListener('click', ()=>{
+      if(!validate()) return;
+      if(!$("appId").dataset.id){ const id = randomId(); $("appId").dataset.id = id; $("appId").textContent = `Application ID: ${id}`; }
+      stageIndex = 0; renderStages(); updatePreview(); showOk('Application submitted.');
+    });
+
+    $("btnNext").addEventListener('click', ()=>{
+      if(stageIndex < 0){ showError('Submit the application first.'); return; }
+      if(stageIndex >= STAGES.length-2){ showError('No further automatic stages. Use Approve/Reject, then Disburse.'); return; }
+      stageIndex++; renderStages(); updatePreview();
+    });
+
+    $("btnApprove").addEventListener('click', ()=>{
+      if(stageIndex !== STAGES.indexOf('Loan Officer Review')){ showError('Approval allowed only at Loan Officer Review stage.'); return; }
+      stageIndex = STAGES.indexOf('Approved / Rejected'); renderStages(); updatePreview(); showOk('Application approved. Proceed to Disbursement.');
+    });
+
+    $("btnReject").addEventListener('click', ()=>{
+      if(stageIndex !== STAGES.indexOf('Loan Officer Review')){ showError('Rejection allowed only at Loan Officer Review stage.'); return; }
+      stageIndex = STAGES.indexOf('Approved / Rejected'); $("statusBadge").textContent = 'Rejected'; renderStages(); updatePreview(); showError('Application rejected.');
+    });
+
+    $("btnDisburse").addEventListener('click', ()=>{
+      if($("statusBadge").textContent !== 'Approved / Rejected'){ showError('Disbursement only after approval.'); return; }
+      if(document.querySelector('#statusBadge').textContent === 'Rejected'){ showError('Cannot disburse a rejected application.'); return; }
+      stageIndex = STAGES.indexOf('Disbursed'); renderStages(); updatePreview(); showOk('Funds disbursed.');
+    });
+
+    // ---------- On load ----------
+    buildStepper();
+    calcEMI();
+    updatePreview();
+  </script>
+</body>
+</html>
