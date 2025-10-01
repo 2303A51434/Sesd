@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mini Banking UI</title>
+  <style>
+    :root{ --bg:#f6f9fc; --card:#ffffff; --muted:#6b7280; --accent:#2563eb; --danger:#ef4444 }
+    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{margin:0;background:linear-gradient(180deg,var(--bg),#eef4ff);padding:40px}
+    .container{max-width:980px;margin:0 auto;display:grid;grid-template-columns:1fr 360px;gap:24px}
+    .card{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 6px 18px rgba(16,24,40,0.06)}
+
+    header h1{margin:0;font-size:20px}
+    .balance{font-size:28px;margin-top:8px}
+    .muted{color:var(--muted);font-size:13px}
+
+    form.row{display:flex;gap:8px;align-items:center}
+    input[type=number], select, input[type=text]{flex:1;padding:10px;border-radius:8px;border:1px solid #e6e9ef}
+    button{background:var(--accent);color:white;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
+    button.ghost{background:transparent;color:var(--accent);border:1px solid rgba(37,99,235,0.12)}
+
+    .log{max-height:320px;overflow:auto;margin-top:12px;padding:8px;border-radius:8px;border:1px dashed #eef2ff;background:#fbfdff}
+    .log-item{padding:8px;border-bottom:1px solid #f1f5f9;font-size:14px}
+    .small{font-size:13px}
+
+    @media (max-width:880px){.container{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <main class="card">
+      <header>
+        <h1>Mini Banking Dashboard</h1>
+        <div class="muted">Account: <strong id="accountName">Savings - #1001</strong></div>
+        <div class="balance" id="balance">₹ 10,000.00</div>
+      </header>
+
+      <section style="margin-top:18px">
+        <form id="txnForm" class="row">
+          <select id="type">
+            <option value="deposit">Deposit</option>
+            <option value="withdraw">Withdraw</option>
+            <option value="transfer">Transfer</option>
+          </select>
+          <input id="amount" type="number" min="1" step="0.01" placeholder="Amount" />
+          <input id="toAccount" type="text" placeholder="To (for transfer)" />
+          <button id="doTxn" type="button">Submit</button>
+        </form>
+
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button id="interestBtn" class="ghost">Calculate Interest</button>
+          <button id="undoBtn" class="ghost">Undo Last</button>
+        </div>
+
+        <div class="log" id="log"></div>
+      </section>
+    </main>
+
+    <aside class="card">
+      <h3>Account Info</h3>
+      <div class="muted small" style="margin-top:8px">Type: <span id="accType">Savings</span></div>
+      <div class="muted small">Interest Strategy: <span id="strategy">SavingsInterest</span></div>
+
+      <hr style="margin:12px 0;border:none;border-top:1px solid #f1f5f9" />
+      <h4>Customers Notified</h4>
+      <div class="muted small" id="subscribers">Alice, Bob</div>
+
+      <hr style="margin:12px 0;border:none;border-top:1px solid #f1f5f9" />
+      <div class="muted small">This UI is static and demonstrates pattern interactions. It simulates commands and observer notifications in the browser (no real backend required).</div>
+    </aside>
+  </div>
+
+  <script>
+    const balanceEl = document.getElementById('balance');
+    const logEl = document.getElementById('log');
+
+    let balance = 10000.00;
+    let history = [];
+
+    const subscribers = ['Alice', 'Bob'];
+    document.getElementById('subscribers').textContent = subscribers.join(', ');
+
+    function notify(message){
+      const time = new Date().toLocaleTimeString();
+      subscribers.forEach(s => appendLog(`${time} — Notify ${s}: ${message}`));
+    }
+
+    function appendLog(text){
+      const div = document.createElement('div');
+      div.className = 'log-item';
+      div.textContent = text;
+      logEl.prepend(div);
+    }
+
+    const strategies = {
+      'SavingsInterest': b => b * 0.04,
+      'FDInterest': b => b * 0.07,
+      'CurrentInterest': b => 0
+    };
+
+    function makeCommand(type, amount, to){
+      if(type === 'deposit'){
+        return {
+          execute(){ balance += amount; updateUI(); notify(`Deposited ₹${amount.toFixed(2)}. New balance ₹${balance.toFixed(2)}`); },
+          undo(){ balance -= amount; updateUI(); appendLog(`Undo deposit of ₹${amount.toFixed(2)}`); }
+        }
+      }
+      if(type === 'withdraw'){
+        return {
+          execute(){ if(amount > balance){ appendLog('Insufficient funds'); return; } balance -= amount; updateUI(); notify(`Withdrew ₹${amount.toFixed(2)}. New balance ₹${balance.toFixed(2)}`); },
+          undo(){ balance += amount; updateUI(); appendLog(`Undo withdraw of ₹${amount.toFixed(2)}`); }
+        }
+      }
+      if(type === 'transfer'){
+        return {
+          execute(){ if(amount > balance){ appendLog('Insufficient funds'); return; } balance -= amount; updateUI(); notify(`Transferred ₹${amount.toFixed(2)} to ${to}. New balance ₹${balance.toFixed(2)}`); },
+          undo(){ balance += amount; updateUI(); appendLog(`Undo transfer of ₹${amount.toFixed(2)} to ${to}`); }
+        }
+      }
+    }
+
+    function updateUI(){ balanceEl.textContent = `₹ ${balance.toFixed(2)}`; }
+
+    document.getElementById('doTxn').addEventListener('click', () => {
+      const t = document.getElementById('type').value;
+      const amt = parseFloat(document.getElementById('amount').value);
+      const to = document.getElementById('toAccount').value || '—';
+      if(!amt || amt <= 0){ appendLog('Enter valid amount'); return; }
+      const cmd = makeCommand(t, amt, to);
+      cmd.execute();
+      history.push(cmd);
+    });
+
+    document.getElementById('undoBtn').addEventListener('click', () => {
+      const last = history.pop();
+      if(!last){ appendLog('Nothing to undo'); return; }
+      last.undo();
+    });
+
+    document.getElementById('interestBtn').addEventListener('click', () => {
+      const stratKey = document.getElementById('strategy').textContent.trim();
+      const calc = strategies[stratKey] || (()=>0);
+      const interest = calc(balance);
+      appendLog(`Interest (${stratKey}) calculated: ₹${interest.toFixed(2)}`);
+    });
+
+    updateUI();
+    appendLog('Mini Banking UI ready — modify HTML/CSS/JS as you like');
+  </script>
+
+</body>
+</html>
