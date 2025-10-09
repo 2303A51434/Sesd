@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GPA Calculator</title>
+  <style>
+    :root{--bg:#0f172a;--card:#0b1220;--muted:#94a3b8;--accent:#7c3aed}
+    *{box-sizing:border-box;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{margin:0;background:linear-gradient(180deg,#071024 0%,#071b2a 100%);color:#e6eef8;padding:28px}
+    .container{max-width:900px;margin:0 auto}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));border-radius:12px;padding:18px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
+    h1{margin:0 0 8px;font-size:20px}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    form.row{display:flex;gap:8px;flex-wrap:wrap}
+    input,select,button{padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
+    input[type=number]{width:110px}
+    input[type=text]{flex:1;min-width:180px}
+    select{width:140px}
+    .btn{background:var(--accent);border:none;color:white;cursor:pointer}
+    .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    .list{margin-top:14px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:8px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.03);font-size:14px}
+    .muted{color:var(--muted);font-size:13px}
+    .gpa{font-weight:700;font-size:18px}
+    .error{color:#ffb4b4;background:rgba(255,180,180,0.06);padding:8px;border-radius:8px;margin-top:10px}
+    .transcript{white-space:pre-wrap;background:rgba(255,255,255,0.02);padding:12px;border-radius:8px;margin-top:10px;font-family:monospace;font-size:13px}
+    @media (max-width:560px){.row{flex-direction:column}input[type=number],select{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>University GPA Calculator</h1>
+      <p class="lead">Add courses with credits and grades, then calculate GPA and view transcript.</p>
+
+      <div id="error" class="error" style="display:none"></div>
+
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <input id="courseName" type="text" placeholder="Course name (e.g. Calculus)">
+        <input id="courseCredits" type="number" min="1" value="3" placeholder="Credits">
+        <select id="courseGrade" aria-label="Grade">
+          <option value="A+">A+</option>
+          <option value="A">A</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B">B</option>
+          <option value="B-">B-</option>
+          <option value="C+">C+</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="F">F</option>
+        </select>
+        <button id="addCourseBtn" class="btn">Add Course</button>
+        <button id="clearBtn" class="btn secondary">Clear All</button>
+      </div>
+
+      <div class="list">
+        <table id="coursesTable" aria-live="polite">
+          <thead>
+            <tr><th>Course</th><th>Credits</th><th>Grade</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+          <button id="calcGpaBtn" class="btn">Calculate GPA</button>
+          <div class="muted">GPA: <span id="gpaValue" class="gpa">0.00</span></div>
+        </div>
+
+        <div id="transcript" class="transcript" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Data model classes ---
+    class InvalidGradeError extends Error {}
+
+    class Course {
+      constructor(name, credits){
+        this.name = name;
+        this.credits = Number(credits) || 0;
+      }
+    }
+
+    class Grade {
+      // Extended grade mapping with +/-
+      static GRADE_POINTS = {
+        'A+':4.0, 'A':4.0, 'A-':3.7,
+        'B+':3.3, 'B':3.0, 'B-':2.7,
+        'C+':2.3, 'C':2.0, 'C-':1.7,
+        'D':1.0, 'F':0.0
+      };
+
+      constructor(course, letter){
+        if (!Grade.GRADE_POINTS.hasOwnProperty(letter)){
+          throw new InvalidGradeError('Invalid grade: ' + letter);
+        }
+        this.course = course;
+        this.letter = letter;
+        this.points = Grade.GRADE_POINTS[letter];
+      }
+    }
+
+    class Student {
+      constructor(name){
+        this.name = name;
+        this.grades = []; // array of Grade
+      }
+
+      addGrade(course, letter){
+        const g = new Grade(course, letter);
+        this.grades.push(g);
+      }
+
+      clearGrades(){ this.grades = []; }
+
+      calculateGPA(){
+        if (this.grades.length === 0) return 0.00;
+        const totalCredits = this.grades.reduce((s,g)=> s + g.course.credits, 0);
+        if (totalCredits === 0) return 0.00;
+        const totalPoints = this.grades.reduce((s,g)=> s + g.points * g.course.credits, 0);
+        return Math.round((totalPoints/totalCredits) * 100) / 100; // 2 decimal places
+      }
+
+      generateTranscript(){
+        let out = `Transcript for ${this.name}\n`;
+        out += '----------------------------------------\n';
+        if (this.grades.length === 0){
+          out += '(no courses)\n';
+        } else {
+          this.grades.forEach(g=>{
+            out += `${g.course.name} (${g.course.credits} cr): ${g.letter}\n`;
+          });
+        }
+        out += '----------------------------------------\n';
+        out += `GPA: ${this.calculateGPA()}\n`;
+        return out;
+      }
+    }
+
+    // --- UI wiring ---
+    const student = new Student('Student Name');
+
+    const els = {
+      courseName: document.getElementById('courseName'),
+      courseCredits: document.getElementById('courseCredits'),
+      courseGrade: document.getElementById('courseGrade'),
+      addCourseBtn: document.getElementById('addCourseBtn'),
+      clearBtn: document.getElementById('clearBtn'),
+      coursesTableBody: document.querySelector('#coursesTable tbody'),
+      calcGpaBtn: document.getElementById('calcGpaBtn'),
+      gpaValue: document.getElementById('gpaValue'),
+      transcriptEl: document.getElementById('transcript'),
+      errorEl: document.getElementById('error')
+    };
+
+    function showError(msg){
+      els.errorEl.textContent = msg;
+      els.errorEl.style.display = 'block';
+      setTimeout(()=>{ els.errorEl.style.display = 'none'; }, 4000);
+    }
+
+    function refreshTable(){
+      els.coursesTableBody.innerHTML = '';
+      student.grades.forEach((g, idx)=>{
+        const tr = document.createElement('tr');
+        const nameTd = document.createElement('td'); nameTd.textContent = g.course.name;
+        const credTd = document.createElement('td'); credTd.textContent = g.course.credits;
+        const gradeTd = document.createElement('td'); gradeTd.textContent = g.letter;
+        const actionTd = document.createElement('td');
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = 'Remove';
+        removeBtn.className = 'btn secondary';
+        removeBtn.onclick = ()=>{ student.grades.splice(idx,1); refreshTable(); updateGPA(); };
+        actionTd.appendChild(removeBtn);
+        tr.appendChild(nameTd); tr.appendChild(credTd); tr.appendChild(gradeTd); tr.appendChild(actionTd);
+        els.coursesTableBody.appendChild(tr);
+      });
+    }
+
+    function updateGPA(){
+      const gpa = student.calculateGPA();
+      els.gpaValue.textContent = gpa.toFixed(2);
+      els.transcriptEl.style.display = 'block';
+      els.transcriptEl.textContent = student.generateTranscript();
+    }
+
+    els.addCourseBtn.addEventListener('click', ()=>{
+      const name = els.courseName.value.trim();
+      const credits = Number(els.courseCredits.value);
+      const grade = els.courseGrade.value;
+      if (!name){ showError('Please enter a course name.'); return; }
+      if (!credits || credits <= 0){ showError('Credits must be a positive number.'); return; }
+      try{
+        const c = new Course(name, credits);
+        student.addGrade(c, grade);
+        els.courseName.value = '';
+        refreshTable();
+        updateGPA();
+      } catch(err){
+        if (err instanceof InvalidGradeError){ showError(err.message); }
+        else { showError('Error: ' + err.message); }
+      }
+    });
+
+    els.calcGpaBtn.addEventListener('click', ()=>{
+      updateGPA();
+    });
+
+    els.clearBtn.addEventListener('click', ()=>{
+      student.clearGrades();
+      refreshTable();
+      updateGPA();
+    });
+
+    // initialize
+    updateGPA();
+  </script>
+</body>
+</html>
