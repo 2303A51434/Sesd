@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-group input, .input-group select {
+            padding-left: 2.5rem;
+        }
+
+        .input-group svg {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        #courseList > div {
+            transition: all 0.2s ease-in-out;
+        }
+
+        #courseList > div:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-box {
+            animation: slideIn 0.3s forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-lg border border-gray-200">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">GPA Calculator</h1>
+        
+        <!-- Student Info and Course Input Section -->
+        <div class="space-y-4 mb-6 p-6 border border-gray-200 rounded-2xl bg-gray-50">
+            <h2 class="text-xl font-semibold text-gray-700 mb-2">Student Information</h2>
+            <div class="input-group">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                </svg>
+                <input type="text" id="studentName" placeholder="Student Name" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            </div>
+            <div class="input-group">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zm4 10a4 4 0 01-4 4H9a4 4 0 01-4-4V5a2 2 0 012-2h2.5a.5.5 0 010 1H7a1 1 0 00-1 1v11a3 3 0 003 3h4a3 3 0 003-3v-5h2v5z" />
+                </svg>
+                <input type="text" id="hallTicketNumber" placeholder="Hall Ticket Number" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+            </div>
+
+            <h2 class="text-xl font-semibold text-gray-700 mt-6 mb-2">Add New Course</h2>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div class="input-group flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                    </svg>
+                    <input type="text" id="courseName" placeholder="Course Name" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                </div>
+                <div class="input-group w-24">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-7h2v2h-2v-2zm0-4h2v2h-2V7z" clip-rule="evenodd" />
+                    </svg>
+                    <input type="number" id="creditHours" placeholder="Credits" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center transition duration-200">
+                </div>
+                <div class="input-group flex-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                    </svg>
+                    <select id="gradeSelect" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
+                        <option value="" disabled selected>Grade</option>
+                        <option value="A+">A+</option>
+                        <option value="A">A</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B">B</option>
+                        <option value="B-">B-</option>
+                        <option value="C+">C+</option>
+                        <option value="C">C</option>
+                        <option value="C-">C-</option>
+                        <option value="D+">D+</option>
+                        <option value="D">D</option>
+                        <option value="D-">D-</option>
+                        <option value="F">F</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="addCourse()" class="w-full bg-blue-600 text-white font-semibold py-3 rounded-md shadow-lg hover:bg-blue-700 transform hover:scale-105 transition duration-200 ease-in-out">
+                Add Course
+            </button>
+        </div>
+
+        <!-- Course List and GPA Display -->
+        <div class="bg-white p-6 rounded-2xl border border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Your Courses</h2>
+            <div id="courseList" class="space-y-3">
+                <!-- Courses will be dynamically added here -->
+            </div>
+            
+            <hr class="my-6 border-gray-300">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-center text-xl font-bold text-gray-800">
+                <span>Overall GPA:</span>
+                <span id="gpaDisplay" class="text-blue-600 text-4xl mt-2 sm:mt-0">0.00</span>
+            </div>
+            
+            <div class="mt-6 flex flex-col sm:flex-row gap-4">
+                <button onclick="confirmClearAll()" class="w-full bg-red-600 text-white font-semibold py-3 rounded-md shadow-lg hover:bg-red-700 transform hover:scale-105 transition duration-200 ease-in-out">
+                    Clear All Courses
+                </button>
+                 <button onclick="generateTranscript()" class="w-full bg-gray-600 text-white font-semibold py-3 rounded-md shadow-lg hover:bg-gray-700 transform hover:scale-105 transition duration-200 ease-in-out">
+                    Generate Transcript
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transcript Modal -->
+    <div id="transcriptModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full z-50 flex justify-center items-center p-4">
+        <div class="relative p-8 border w-full max-w-2xl shadow-xl rounded-xl bg-white transform transition-transform duration-300 scale-95">
+            <h3 class="text-2xl font-bold text-center text-gray-900 mb-6">Student Transcript</h3>
+            <div class="space-y-2 mb-6 text-gray-700">
+                <p><strong>Name:</strong> <span id="transcriptName"></span></p>
+                <p><strong>Hall Ticket No:</strong> <span id="transcriptHallTicket"></span></p>
+            </div>
+            <div id="transcriptContent" class="space-y-3 mb-6">
+                <!-- Transcript content will be generated here -->
+            </div>
+            <div class="flex justify-center items-center gap-4">
+                <button onclick="closeTranscriptModal()" class="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition duration-200">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full z-50 flex justify-center items-center">
+        <div class="relative mx-auto p-8 border w-96 shadow-xl rounded-xl bg-white transform transition-transform duration-300 scale-95">
+            <div class="mt-3 text-center">
+                <h3 class="text-xl leading-6 font-medium text-gray-900">Are you sure?</h3>
+                <div class="mt-2 px-4 py-3">
+                    <p class="text-sm text-gray-500">This action will permanently delete all courses. This cannot be undone.</p>
+                </div>
+                <div class="flex justify-center items-center px-4 py-3 mt-4 gap-4">
+                    <button id="confirmBtn" onclick="clearAllCourses()" class="px-6 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700 transition duration-200">
+                        Confirm
+                    </button>
+                    <button id="cancelBtn" onclick="closeModal()" class="px-6 py-2 bg-gray-200 text-gray-700 font-medium rounded-md hover:bg-gray-300 transition duration-200">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure to hold our courses
+        let courses = [];
+
+        // Grade to GPA point mapping (10.0 scale)
+        const GPA_MAP = {
+            'A+': 10.0, 'A': 9.5, 'A-': 9.0,
+            'B+': 8.5, 'B': 8.0, 'B-': 7.5,
+            'C+': 7.0, 'C': 6.5, 'C-': 6.0,
+            'D+': 5.5, 'D': 5.0, 'D-': 4.5,
+            'F': 0.0
+        };
+
+        // Function to calculate the GPA
+        function calculateGPA() {
+            if (courses.length === 0) {
+                return 0.00;
+            }
+
+            let totalPoints = 0;
+            let totalCredits = 0;
+
+            courses.forEach(course => {
+                if (course.grade) {
+                    totalPoints += GPA_MAP[course.grade] * course.creditHours;
+                    totalCredits += course.creditHours;
+                }
+            });
+
+            if (totalCredits === 0) {
+                return 0.00;
+            }
+
+            const gpa = totalPoints / totalCredits;
+            return gpa.toFixed(2);
+        }
+
+        // Function to render the course list and update the GPA
+        function render() {
+            const courseListEl = document.getElementById('courseList');
+            courseListEl.innerHTML = '';
+            
+            if (courses.length === 0) {
+                courseListEl.innerHTML = '<p class="text-center text-gray-500 italic py-4">No courses added yet.</p>';
+            }
+
+            courses.forEach((course, index) => {
+                const courseEl = document.createElement('div');
+                courseEl.className = 'bg-gray-50 p-4 rounded-lg flex items-center justify-between text-sm shadow-sm transition duration-200 hover:shadow-md';
+                
+                let gradeText = course.grade ? course.grade : 'Not Graded';
+                let gradeColor = course.grade ? (GPA_MAP[course.grade] > 7.0 ? 'text-green-600' : 'text-red-600') : 'text-gray-500';
+
+                courseEl.innerHTML = `
+                    <div class="flex-1">
+                        <div class="font-semibold text-gray-800">${course.name}</div>
+                        <div class="text-xs text-gray-500 mt-1">${course.creditHours} credits</div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="text-md font-bold ${gradeColor}">
+                            ${gradeText}
+                        </div>
+                        <button onclick="deleteCourse(${index})" class="text-gray-400 hover:text-red-600 transition-colors duration-200 p-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 112 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                courseListEl.appendChild(courseEl);
+            });
+
+            document.getElementById('gpaDisplay').innerText = calculateGPA();
+        }
+
+        // Function to add a course from the input fields
+        function addCourse() {
+            const courseName = document.getElementById('courseName').value.trim();
+            const creditHours = parseFloat(document.getElementById('creditHours').value);
+            const grade = document.getElementById('gradeSelect').value;
+
+            // Basic input validation
+            if (!courseName || isNaN(creditHours) || creditHours <= 0) {
+                showMessage("Please enter a valid course name and positive credit hours.", 'error');
+                return;
+            }
+            if (!grade) {
+                 showMessage("Please select a grade for the course.", 'error');
+                return;
+            }
+
+            // Create a new course object and add it to the array
+            courses.push({
+                name: courseName,
+                creditHours: creditHours,
+                grade: grade
+            });
+
+            // Clear input fields and re-render
+            document.getElementById('courseName').value = '';
+            document.getElementById('creditHours').value = '';
+            document.getElementById('gradeSelect').value = '';
+            showMessage("Course added successfully!", 'success');
+            render();
+        }
+        
+        // Function to delete a single course
+        function deleteCourse(index) {
+            courses.splice(index, 1);
+            render();
+            showMessage("Course deleted.", 'success');
+        }
+        
+        // Function to show the confirmation modal
+        function confirmClearAll() {
+            document.getElementById('confirmationModal').classList.remove('hidden');
+        }
+
+        // Function to clear all courses
+        function clearAllCourses() {
+            courses = [];
+            closeModal();
+            render();
+            showMessage("All courses have been cleared.", 'success');
+        }
+        
+        // Function to close the confirmation modal
+        function closeModal() {
+            document.getElementById('confirmationModal').classList.add('hidden');
+        }
+
+        // Function to show the message box
+        function showMessage(message, type) {
+            const container = document.body;
+            const existingMessage = document.getElementById('messageBox');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            const messageBox = document.createElement('div');
+            messageBox.id = 'messageBox';
+            messageBox.className = `fixed bottom-6 left-1/2 -translate-x-1/2 p-4 rounded-lg shadow-xl z-50 transform scale-100 message-box ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white text-sm font-medium`;
+            messageBox.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        ${type === 'success' ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />' : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />'}
+                    </svg>
+                    <span>${message}</span>
+                </div>
+            `;
+            container.appendChild(messageBox);
+
+            setTimeout(() => {
+                messageBox.classList.remove('scale-100');
+                messageBox.classList.add('scale-0');
+                setTimeout(() => messageBox.remove(), 300);
+            }, 3000);
+        }
+
+        function generateTranscript() {
+            const studentName = document.getElementById('studentName').value.trim();
+            const hallTicketNumber = document.getElementById('hallTicketNumber').value.trim();
+            
+            const transcriptNameEl = document.getElementById('transcriptName');
+            const transcriptHallTicketEl = document.getElementById('transcriptHallTicket');
+            const transcriptContentEl = document.getElementById('transcriptContent');
+            
+            transcriptNameEl.textContent = studentName || 'N/A';
+            transcriptHallTicketEl.textContent = hallTicketNumber || 'N/A';
+            transcriptContentEl.innerHTML = '';
+
+            if (courses.length === 0) {
+                transcriptContentEl.innerHTML = '<p class="text-center text-gray-500 italic">No courses to display.</p>';
+            } else {
+                courses.forEach(course => {
+                    const courseItem = document.createElement('div');
+                    courseItem.className = 'flex justify-between items-center py-2 border-b border-gray-200';
+                    courseItem.innerHTML = `
+                        <div class="flex-1">
+                            <span class="font-medium text-gray-800">${course.name}</span>
+                        </div>
+                        <div class="flex-1 flex justify-center">
+                            <span class="text-sm text-gray-500">${course.creditHours} Credits</span>
+                        </div>
+                        <div class="flex-1 flex justify-end">
+                            <span class="font-bold">${course.grade}</span>
+                        </div>
+                    `;
+                    transcriptContentEl.appendChild(courseItem);
+                });
+            }
+
+            document.getElementById('transcriptModal').classList.remove('hidden');
+        }
+
+        function closeTranscriptModal() {
+            document.getElementById('transcriptModal').classList.add('hidden');
+        }
+
+        // Initial render
+        render();
+
+    </script>
+</body>
+</html>
